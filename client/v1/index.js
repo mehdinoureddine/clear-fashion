@@ -2,7 +2,7 @@
 'use strict';
 
 console.log('🚀 This is it.');
-
+console.log("test");
 const MY_FAVORITE_BRANDS = [{
   'name': 'Hopaal',
   'url': 'https://hopaal.com/'
