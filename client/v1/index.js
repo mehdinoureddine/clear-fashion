@@ -32,20 +32,9 @@ console.log(MY_FAVORITE_BRANDS[0]);
 // I can find on these e-shops
 // 2. Log the variable
 
-var cheapest = [{
-  'name': 'Classique Noir - T-shirt',
-  'url': 'https://https://hopaal.com/collections/t-shirts-homme/products/classique-noir-t-shirt-homme?variant=39629285949624.com/'
-}, 
-                {
-  'name': 'Le t-shirt',
-  'url': 'https://https://www.loom.fr/products/le-t-shirt.loom.fr'
-}, 
-                {
-  'name': 'T-shirt Ranelagh',
-  'url': 'https://adresse.paris/t-shirts-et-polos/3983-t-shirt-ranelagh-1300000259194.html'
-}];
-console.table(cheapest);
-console.log(cheapest[0]);
+var cheapest_tshirt = "https://www.loom.fr/products/le-t-shirt";
+console.log(`Cheapest t-shirt: ${cheapest_tshirt}`);
+
 
 
 
@@ -57,39 +46,122 @@ console.log(cheapest[0]);
  * The variable is loaded by the file data.js
  * 👕
  */
+console.log(marketplace);
 
 // 🎯 TODO: Number of products
 // 1. Create a variable and assign it the number of products
 // 2. Log the variable
 
+var num_p = marketplace.length;
+console.log(num_p);
+// 140
 
 // 🎯 TODO: Brands name
 // 1. Create a variable and assign it the list of brands name only
 // 2. Log the variable
 // 3. Log how many brands we have
 
+console.log("brand names");
+var brands = [];
+for (var i= 0; i <marketplace.length;i++) {
+  if (!(brands.includes(marketplace[i]['brand']))) {
+    brands.push(marketplace[i]['brand'])
+  }
+}
+console.log(brands);
+console.log(brands.length);
+//it shows 5 brands : adresse', 'loom', 'aatise', '1083', 'dedicated'
 
 // 🎯 TODO: Sort by price
 // 1. Create a function to sort the marketplace products by price
 // 2. Create a variable and assign it the list of products by price from lowest to highest
 // 3. Log the variable
 
+console.log("sorted array");
+var c;
+var sortmarket;
+function price_sort(tab) 
+{
+  var ordtab = tab;
+  for (var i = 0; i <tab.length;i++)
+  {
+    for(var j = 0; j <= i;j++){
+      if (ordtab[i]['price'] < ordtab[j]['price']) 
+      {
+        c = ordtab[j];
+        ordtab[j] = ordtab[i];
+        ordtab[i] = c;
+      }
+    }
+  }
+  return ordtab;
+}
+ sortmarket = price_sort(marketplace);
+ console.log(sortmarket);
 
 // 🎯 TODO: Sort by date
 // 1. Create a function to sort the marketplace objects by products date
 // 2. Create a variable and assign it the list of products by date from recent to old
 // 3. Log the variable
 
+console.log("sort by date");
+function date_is_greater(date1,date2)
+{
+  date1 = date1.split('-').join('');
+  date2 = date2.split('-').join('');
+  return Number(date1) < Number(date2);
+}
+
+var c;
+function date_sort(tab) 
+{
+  var ordtab = tab;
+  for (var i = 0; i <tab.length;i++)
+  {
+    for(var j = 0; j <= i;j++){
+      if (!date_is_greater(ordtab[i]['date'],ordtab[j]['date'])) 
+      {
+        c = ordtab[j];
+        ordtab[j] = ordtab[i];
+        ordtab[i] = c;
+      }
+    }
+  }
+  return ordtab;
+}
+var datetab;
+datetab = date_sort(marketplace);
+console.log(datetab);
 
 // 🎯 TODO: Filter a specific price range
 // 1. Filter the list of products between 50€ and 100€
 // 2. Log the list
 
+console.log("specific price range");
+var tab = [];
+marketplace.forEach(element => {
+  if ((element['price'] <= 100) && (element['price'] >= 50))
+  {
+    tab.push(element)
+  }
+  
+});
+console.log(tab);
 
 // 🎯 TODO: Average price
 // 1. Determine the average price of the marketplace
 // 2. Log the average
 
+console.log("average price");
+var avg = 0;
+marketplace.forEach(element =>
+  {
+    avg += element.price;
+  })
+avg = avg/marketplace.length;
+console.log(avg);
+
+//the average price is 91.99285714285715
 
 
 
@@ -117,17 +189,62 @@ console.log(cheapest[0]);
 // 2. Log the variable
 // 3. Log the number of products by brands
 
+var tab0 = [];
+var tab1 = [];
+var tab2 = [];
+var tab3 = [];
+var tab4 = [];
+marketplace.forEach(element =>
+   {
+     if(element.brand == brands[0]){
+       tab0.push(element);
+     }
+     else if (element.brand == brands[1]){
+       tab1.push(element);
+     }
+     else if (element.brand == brands[2]){
+      tab2.push(element);
+    }
+    else if (element.brand == brands[3]){
+      tab3.push(element);
+    }
+    else if (element.brand == brands[4]){
+      tab4.push(element);
+    } 
+   })
+var by_brand = {};
+by_brand[brands[0]] = tab0;
+by_brand[brands[1]] = tab1;
+by_brand[brands[2]] = tab2;
+by_brand[brands[3]] = tab3;
+by_brand[brands[4]] = tab4;
+console.log(by_brand);
+console.log("number of products of the brand " + brands[0]);
+console.log(by_brand[brands[0]].length);
 
 // 🎯 TODO: Sort by price for each brand
 // 1. For each brand, sort the products by price, from highest to lowest
 // 2. Log the sort
 
+console.log("sort by price for each brand :");
+by_brand[brands[0]] = price_sort(tab0);
+by_brand[brands[1]] = price_sort(tab1);
+by_brand[brands[2]] = price_sort(tab2);
+by_brand[brands[3]] = price_sort(tab3);
+by_brand[brands[4]] = price_sort(tab4);
+console.log(bybrand);
 
 // 🎯 TODO: Sort by date for each brand
 // 1. For each brand, sort the products by date, from old to recent
 // 2. Log the sort
 
-
+console.log("sort by date for each brand :");
+by_brand[brands[0]] = date_sort(tab0);
+by_brand[brands[1]] = date_sort(tab1);
+by_brand[brands[2]] = date_sort(tab2);
+by_brand[brands[3]] = date_sort(tab3);
+by_brand[brands[4]] = date_sort(tab4);
+console.log(by_brand);
 
 
 
