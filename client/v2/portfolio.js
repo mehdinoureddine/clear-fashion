@@ -10,6 +10,7 @@ const selectShow = document.querySelector('#show-select');
 const selectPage = document.querySelector('#page-select');
 const sectionProducts = document.querySelector('#products');
 const spanNbProducts = document.querySelector('#nbProducts');
+const selectBrand = document.querySelector('#brand-select');
 
 /**
  * Set global value
@@ -122,3 +123,50 @@ document.addEventListener('DOMContentLoaded', async () => {
   setCurrentProducts(products);
   render(currentProducts, currentPagination);
 });
+
+/**
+* Select the page number
+ */
+
+selectPage.addEventListener('change', event => {
+  fetchProducts(parseInt(event.target.value),parseInt(selectShow.value))
+  .then(setCurrentProducts)
+  .then(() => render(currentProducts, currentPagination));
+});
+
+document.addEventListener('DOMContentLoaded', () =>
+  fetchProducts()
+    .then(setCurrentProducts)
+    .then(() => render(currentProducts, currentPagination))
+);
+
+/**
+ * Display by brand
+ */
+
+var brands = [];
+ const api1 = async (page = 1, size = -1) => {
+  try {
+    const response = await fetch(
+      `https://clear-fashion-api.vercel.app?page=${page}&size=${size}`
+    );
+    const body = await response.json();
+
+    if (body.success !== true) {
+      console.error(body);
+      return {currentProducts, currentPagination};
+    }
+    body.data.result.forEach(element => 
+      {
+        if (!(brands.includes(element.brand))) 
+        {
+            brands.push(element.brand);
+        }
+      })
+    return body.data.result;
+  } catch (error) {
+    console.error(error);
+    return {currentProducts, currentPagination};
+  }
+};
+var api_b = api1();
