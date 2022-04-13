@@ -6,11 +6,21 @@ let currentProducts = [];
 let currentPagination = {};
 
 // instantiate the selectors
+
+
 const selectShow = document.querySelector('#show-select');
 const selectPage = document.querySelector('#page-select');
+const SelectBrand = document.querySelector('#brand-select');
 const sectionProducts = document.querySelector('#products');
+const selectDate = document.querySelector('#recently');
+const selectPrice = document.querySelector('#price');
+const selectSort = document.querySelector('#sort');
 const spanNbProducts = document.querySelector('#nbProducts');
-const selectBrand = document.querySelector('#brand-select');
+const spanNbNew = document.querySelector('#nbNew');
+const p50 = document.querySelector('#p50');
+const p90 = document.querySelector('#p90');
+const p95 = document.querySelector('#p95');
+const lastDate = document.querySelector('#lastDate');
 
 /**
  * Set global value
@@ -32,6 +42,25 @@ const fetchProducts = async (page = 1, size = 12) => {
   try {
     const response = await fetch(
       `https://clear-fashion-api.vercel.app?page=${page}&size=${size}`
+    );
+    const body = await response.json();
+
+    if (body.success !== true) {
+      console.error(body);
+      return {currentProducts, currentPagination};
+    }
+
+    return body.data;
+  } catch (error) {
+    console.error(error);
+    return {currentProducts, currentPagination};
+  }
+};
+
+const request_products = async () => {
+  try {
+    const response = await fetch(
+      `https://server-theta-eight.vercel.app/products/find/?currentPage=1&pageLimit=0`
     );
     const body = await response.json();
 
@@ -91,17 +120,96 @@ const renderPagination = pagination => {
  * Render page selector
  * @param  {Object} pagination
  */
-const renderIndicators = pagination => {
+ const renderIndicators = pagination => {
   const {count} = pagination;
 
-  spanNbProducts.innerHTML = count;
-};
+  let new_indice = currentProducts.filter(elt => Date.parse(elt.released) > Date.now() - 12096e5*2).length;
 
+  spanNbNew.innerHTML = new_indice;
+  spanNbProducts.innerHTML = count;
+
+  let sort_p_value = currentProducts.sort((x,y) => x.price - y.price);
+  p50.innerHTML = sort_p_value[Math.round(sort_p_value.length/2)].price;
+  p90.innerHTML = sort_p_value[Math.round(sort_p_value.length/10)].price;
+  p95.innerHTML = sort_p_value[Math.round(sort_p_value.length/20)].price;
+
+  let sortDate = currentProducts.sort((x,y) => Date.parse(y.released) - Date.parse(x.released));
+  lastDate.innerHTML = sortDate[0].date;
+};
 const render = (products, pagination) => {
   renderProducts(products);
   renderPagination(pagination);
   renderIndicators(pagination);
 };
+
+SelectBrand.addEventListener('change', async (event) => {
+  let products = await request_products();
+  setCurrentProducts(products);
+  if (event.target.value !== "")
+    currentProducts = currentProducts.filter(elt => elt.brand === event.target.value);
+  currentPagination.count = currentProducts.length;
+  currentPagination.pageCount = Math.floor(currentPagination.count / 12) + 1;
+  currentPagination.pageSize = 12;
+  selectPage.value = "1";
+  selectShow.value = "12";
+  render(currentProducts.slice(0,12), currentPagination);
+});
+
+selectDate.addEventListener('change', async (event) => {
+  let min_date = Date.now() - 12096e5*2;
+  if (selectDate.checked === true)
+    currentProducts = currentProducts.filter(elt => Date.parse(elt.released) > min_date);
+  else  {
+    let products = await request_products();
+    setCurrentProducts(products);
+  }
+
+  currentPagination.count = currentProducts.length;
+  currentPagination.pageCount = Math.floor(currentPagination.count / 12) + 1;
+  currentPagination.pageSize = 12;
+  selectPage.value = "1";
+  selectShow.value = "12";
+  render(currentProducts.slice(0,12), currentPagination);
+});
+
+selectPrice.addEventListener('change', async (event) => {
+  if (selectPrice.checked === true)
+    currentProducts = currentProducts.filter(elt => elt.price < 50);
+  else  {
+    let products = await request_products();
+    setCurrentProducts(products);
+  }
+  currentPagination.count = currentProducts.length;
+  currentPagination.pageCount = Math.floor(currentPagination.count / 12) + 1;
+  currentPagination.pageSize = 12;
+  selectPage.value = "1";
+  selectShow.value = "12";
+  render(currentProducts.slice(0,12), currentPagination);
+});
+
+selectSort.addEventListener('change', async (event) => {
+  switch (event.target.value) {
+    case 'price-asc':
+      currentProducts = currentProducts.sort((a,b) => a.price - b.price);
+      break;
+    case 'price-desc':
+      currentProducts = currentProducts.sort((a,b) => b.price - a.price);
+      break;
+    case 'date-asc':
+      currentProducts = currentProducts.sort((a,b) => Date.parse(a.released) - Date.parse(b.released));
+      break;
+    case 'date-desc':
+      currentProducts = currentProducts.sort((a,b) => Date.parse(b.released) - Date.parse(a.released));
+      break;
+  }
+  currentPagination.count = currentProducts.length;
+  currentPagination.pageCount = Math.floor(currentPagination.count / 12) + 1;
+  currentPagination.pageSize = 12;
+  selectPage.value = "1";
+  selectShow.value = "12";
+  render(currentProducts.slice(0,12), currentPagination);
+});
+
 
 /**
  * Declaration of all Listeners
