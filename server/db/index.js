@@ -2,84 +2,112 @@ require('dotenv').config();
 const {MongoClient} = require('mongodb');
 const fs = require('fs');
 
-const MONGODB_DB_NAME = 'clearfashion';
+const MONGODB_DB_NAME = 'Clear-fashion';
 const MONGODB_COLLECTION = 'products';
-const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_URI = "mongodb+srv://clearfashion:<1234>@cluster0.wazsb.mongodb.net/Clear-fashion?retryWrites=true&w=majority"
 
 let client = null;
 let database = null;
 
+
+
+//---------------------------------------- Connecting to the DataBase ----------------------------------------\\
 /**
- * Get db connection
+ * MongoDB Database Connection
  * @type {MongoClient}
  */
-const getDB = module.exports.getDB = async () => {
-  try {
-    if (database) {
-      console.log('💽  Already Connected');
-      return database;
+module.exports.dbconnect = async () => {
+    try {
+        if(database){
+            console.log('already connected to ${MONGODB_DB_NAME}! \n');
+            return database; }
+
+        console.log(`|Connecting to  ${MONGODB_DB_NAME}|`);
+        client = await MongoClient.connect(MONGODB_URI, { useNewUrlParser: true});
+        database = client.db(MONGODB_DB_NAME);
+        console.log("The connection was successful \n");
+        return database;
+
+    } catch(error) {
+        console.error('Error while trying to connect ');
+        console.error(error);
+        return null;
     }
-
-    client = await MongoClient.connect(MONGODB_URI, {'useNewUrlParser': true});
-    database = client.db(MONGODB_DB_NAME);
-
-    console.log('💽  Connected');
-
-    return database;
-  } catch (error) {
-    console.error('🚨 MongoClient.connect...', error);
-    return null;
-  }
 };
 
+//-------------------------------------------- Insertions in the DataBase --------------------------------------------\\
 /**
- * Insert list of products
+ * MongoDB Database Insertion
  * @param  {Array}  products
  * @return {Object}
  */
-module.exports.insert = async products => {
-  try {
-    const db = await getDB();
-    const collection = db.collection(MONGODB_COLLECTION);
-    // More details
-    // https://docs.mongodb.com/manual/reference/method/db.collection.insertMany/#insert-several-document-specifying-an-id-field
-    const result = await collection.insertMany(products, {'ordered': false});
+ module.exports.insert = async (products,db) => {
+    try {
+        console.log("Starting the insertion);
+        const collection = db.collection(MONGODB_COLLECTION);
+        const result = await collection.insertMany(products, {'ordered': true});
+        console.log("Insertion finished");
+        console.log(`Total insertions : ${result.insertedCount} ---\n`);
+        return result;
 
-    return result;
-  } catch (error) {
-    console.error('🚨 collection.insertMany...', error);
-    fs.writeFileSync('products.json', JSON.stringify(products));
-    return {
-      'insertedCount': error.result.nInserted
-    };
-  }
+    } catch (error) {
+        console.error('Insertion Failed');
+        console.error(`Total insertions: ${error.result.nInserted}`);
+        console.error("//------------------------------------------------------------------------------------//");
+        console.error(error);
+        return null;
+    }
 };
 
+//------------------------------------------- MongoDB Requests -------------------------------------------\\
 /**
- * Find products based on query
- * @param  {Array}  query
+ * MongoDB Query
+ * @param {Array} query
  * @return {Array}
  */
-module.exports.find = async query => {
-  try {
-    const db = await getDB();
-    const collection = db.collection(MONGODB_COLLECTION);
-    const result = await collection.find(query).toArray();
-
-    return result;
-  } catch (error) {
-    console.error('🚨 collection.find...', error);
-    return null;
-  }
+module.exports.find = async (query,db) => {
+    try {
+        console.log("Starting the request");
+        const collection = db.collection(MONGODB_COLLECTION);
+        const products = await collection.find(query).toArray();
+        console.log("Request successful");
+        console.log(products);
+        console.log("//---------------------------------------------------------------------------------//");
+        return products;  
+    } catch (error) {
+        console.error('Request Failed');
+        console.error("//----------------------------------------------------------------------------------//");
+        console.error(error);
+        return null;
+    }
+};
+module.exports.mongoQueryCount = async (query,db) => {
+    try {
+        console.log("Starting the request");
+        const collection = db.collection(MONGODB_COLLECTION);
+        const countProducts = await collection.count(query);
+        console.log("Request successful");
+        console.log(countProducts);
+        console.log("//---------------------------------------------------------------------------------//");
+        return countProducts;  
+    } catch (error) {
+        console.error('Request Failed');
+        console.error("//---------------------------------------------------------------------------------//");
+        console.error(error);
+        return null;
+    }
 };
 
+//------------------------------------------- MongoDB Close -------------------------------------------//
 /**
- * Close the connection
+ * MongoDB Close Connection
  */
-module.exports.close = async () => {
-  try {
+module.exports.mongoClose = async () => {
+    try {
     await client.close();
   } catch (error) {
     console.error('🚨 MongoClient.close...', error);
   }
+};
+  
 };
