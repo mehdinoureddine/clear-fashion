@@ -7,6 +7,7 @@ const {'v5': uuidv5} = require('uuid');
  * @param  {String} data - html response
  * @return {Array} products
  */
+
 const parse = data => {
   const $ = cheerio.load(data);
 
